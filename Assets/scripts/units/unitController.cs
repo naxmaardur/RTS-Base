@@ -26,7 +26,7 @@ public class unitController : PathfindingAgent
     [SerializeField]
     List<Transform> ignore = new List<Transform>();                                    //list of units and buildings to ignore
     float maxFollow = 20;                                                              //the maximum distance the unit can go away from the gaurding position
-    bool canAttack;                                                                    //if the unit can attack
+    bool canAttack = true;                                                             //if the unit can attack
     float attackDammage;                                                               //amount of dammage done during a attack
     float attackSpeed;                                                                 //the max speed a unit can attack at
     float range;                                                                       //the max distance that the unit can still attack
@@ -45,7 +45,7 @@ public class unitController : PathfindingAgent
     //=================================================================================================
 
     //=================Base unit=======================================================================
-    void awake()
+    void Awake()
     {
         //getting the child objects
         MeshObj = transform.GetChild(0);

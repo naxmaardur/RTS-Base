@@ -12,16 +12,26 @@ public class Grid : MonoBehaviour
 
     float nodeDiameter;                                                                //the diameter of a node
     int gridSizeX, gridSizeY;                                                          //the amount of nodes on X and Y of the grid
-    
+    float[,] heights;
+
     //gets the grids size and callculates the size nodes need to be to fill the world size
     private void Start()
     {
+        if(terrain != null)
+        {
+            gridSizeX = terrain.terrainData.heightmapWidth;
+            gridSizeY = terrain.terrainData.heightmapHeight;
+
+            nodeDiameter = gridWorldSize.x / gridSizeX;
+            nodeRadius = nodeDiameter / 2;
+        }
+        else
+        {
+            nodeDiameter = nodeRadius * 2;
+            gridSizeX =  Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
+            gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
+        }
         
-        gridSizeX = terrain.terrainData.heightmapWidth;
-        gridSizeY = terrain.terrainData.heightmapHeight;
-                
-        nodeDiameter = gridWorldSize.x/gridSizeX;
-        nodeRadius = nodeDiameter/2;
         CreateGrid();
     }
 
@@ -30,14 +40,16 @@ public class Grid : MonoBehaviour
     {
         grid = new Node[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.y / 2;
-        float[,] heights = terrain.terrainData.GetHeights(0, 0, gridSizeX, gridSizeY);
+        if(terrain != null)
+            heights = terrain.terrainData.GetHeights(0, 0, gridSizeX, gridSizeY);
       
         for (int x = 0; x < gridSizeX; x++)
         {
             for (int y = 0; y < gridSizeY; y++)
             {
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
-                worldPoint.y = heights[y,x] * terrain.terrainData.heightmapResolution + 1;
+                if(terrain != null)
+                    worldPoint.y = heights[y,x] * terrain.terrainData.heightmapResolution + 1;
                 bool walkable = !(Physics.CheckSphere(worldPoint, nodeRadius,unwalkableMask));
                 grid[x, y] = new Node(walkable, worldPoint,x,y);
             }
@@ -116,5 +128,17 @@ public class Grid : MonoBehaviour
                 n.walkable = !(Physics.CheckSphere(n.worldPosition, nodeRadius, unwalkableMask));
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (grid != null)
+        {
+            foreach (Node n in grid)
+            {
+                Gizmos.DrawCube(n.worldPosition, new Vector3(nodeRadius, nodeRadius, nodeRadius));
+            }
+        }
+       
     }
 }
